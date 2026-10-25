@@ -51,6 +51,9 @@ builder.Services.AddScoped<IClaimsRepository, ClaimsRepository>();
 //Premium
 builder.Services.AddScoped<IPremiumCalculator, PremiumCalculator>();
 
+//Auditing
+builder.Services.AddScoped<IAuditer, Auditer>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -10,12 +10,12 @@ public class ClaimsController : ControllerBase
 {
     private readonly ILogger<ClaimsController> _logger;
     private readonly IClaimsRepository _claimsRepository;
-    private readonly Auditer _auditer;
+    private readonly IAuditer _auditer;
 
-    public ClaimsController(ILogger<ClaimsController> logger, IClaimsRepository claimsRepository, AuditContext auditContext)
+    public ClaimsController(ILogger<ClaimsController> logger, IClaimsRepository claimsRepository, IAuditer auditer)
     {
         _logger = logger;
-        _auditer = new Auditer(auditContext);
+        _auditer = auditer;
         _claimsRepository = claimsRepository;
     }
 

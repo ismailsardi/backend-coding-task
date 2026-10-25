@@ -11,15 +11,15 @@ public class CoversController : ControllerBase
 {
     private readonly ICoversRepository _coversRepository;
     private readonly ILogger<CoversController> _logger;
-    private readonly Auditer _auditer;
+    private readonly IAuditer _auditer;
     private readonly IPremiumCalculator _premiumCalculator;
 
-    public CoversController(ICoversRepository coversRepository, IPremiumCalculator premiumCalculator, AuditContext auditContext, ILogger<CoversController> logger)
+    public CoversController(ICoversRepository coversRepository, IPremiumCalculator premiumCalculator, IAuditer auditer, ILogger<CoversController> logger)
     {
         _coversRepository = coversRepository;
         _premiumCalculator = premiumCalculator;
         _logger = logger;
-        _auditer = new Auditer(auditContext);
+        _auditer = auditer;
     }
 
     [HttpPost("compute")]
