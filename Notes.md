@@ -23,6 +23,12 @@
 - Claim: damage cost max 100,000, cover must exist, created date within the cover period (inclusive).
 - "Today" comes from an injected `TimeProvider`, so the date rules can be unit tested.
 
+## Task 4: Unit tests
+- Unit tests for both services, with repositories, auditer and premium calculator mocked (NSubstitute). No database needed, they run in milliseconds.
+- `FakeTimeProvider` fixes "today", so the start-date rule gives the same result every day.
+- Covered: every validation rule including the boundaries (damage cost of exactly 100,000, a period of exactly 1 year, a claim on the first and last day of its cover), nothing saved or audited when validation fails, and delete of an unknown id not audited.
+- 17 service tests, plus the 12 premium calculation cases from Task 5.
+
 ## Task 5: Premium calculation
 - Added `PremiumCalculatorTests` first (12 cases covering each cover type and the 30/180-day boundaries). 11 failed against the original code.
 - Bug: the day bands only checked an upper bound and weren't exclusive (`if` instead of `else if`), so each day was charged once per band it fell under, three times for the first 30 days.
