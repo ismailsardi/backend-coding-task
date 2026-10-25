@@ -24,7 +24,7 @@ public class ClaimsController : ControllerBase
     public async Task<ActionResult> CreateAsync(Claim claim)
     {
         var created = await _claimsService.CreateAsync(claim);
-        return Created($"/claims/{created.Id}", created);
+        return Created($"/Claims/{created.Id}", created);
     }
 
     [HttpDelete("{id}")]
@@ -43,11 +43,11 @@ public class ClaimsController : ControllerBase
     public async Task<ActionResult<Claim>> GetAsync(string id)
     {
         var claim = await _claimsService.GetByIdAsync(id);
-        if (claim == null)
+        if (claim is null)
         {
             return NotFound();
         }
-        
+
         return Ok(claim);
     }
 }
