@@ -1,7 +1,8 @@
 using Claims.Auditing;
 using Claims.Data;
-using Claims.Repositories;
 using Claims.Premium;
+using Claims.Repositories;
+using Claims.Services;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using System.Runtime.InteropServices;
@@ -47,6 +48,10 @@ builder.Services.AddDbContext<ClaimsContext>(options =>
 //Repositories registration
 builder.Services.AddScoped<ICoversRepository, CoversRepository>();
 builder.Services.AddScoped<IClaimsRepository, ClaimsRepository>();
+
+//Services
+builder.Services.AddScoped<ICoversService, CoversService>();
+builder.Services.AddScoped<IClaimsService, ClaimsService>();
 
 //Premium
 builder.Services.AddScoped<IPremiumCalculator, PremiumCalculator>();
