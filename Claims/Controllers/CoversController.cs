@@ -1,6 +1,7 @@
 using Claims.Auditing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Claims.Data;
 
 namespace Claims.Controllers;
 
