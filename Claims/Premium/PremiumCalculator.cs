@@ -2,37 +2,45 @@ namespace Claims.Premium;
 
 public class PremiumCalculator : IPremiumCalculator
 {
+
+    private const decimal BaseDayRate = 1250m;
     public decimal Calculate(DateTime startDate, DateTime endDate, CoverType coverType)
     {
-        var multiplier = 1.3m;
-        if (coverType == CoverType.Yacht)
-        {
-            multiplier = 1.1m;
-        }
+        var multiplier = GetMultiplier(coverType);
 
-        if (coverType == CoverType.PassengerShip)
-        {
-            multiplier = 1.2m;
-        }
-
-        if (coverType == CoverType.Tanker)
-        {
-            multiplier = 1.5m;
-        }
-
-        var premiumPerDay = 1250 * multiplier;
-        var insuranceLength = (endDate - startDate).TotalDays;
+        var dailyRate = BaseDayRate * multiplier;
+        var days = (endDate - startDate).Days;
         var totalPremium = 0m;
 
-        for (var i = 0; i < insuranceLength; i++)
+        for (var day = 0; day < days; day++)
         {
-            if (i < 30) totalPremium += premiumPerDay;
-            if (i < 180 && coverType == CoverType.Yacht) totalPremium += premiumPerDay - premiumPerDay * 0.05m;
-            else if (i < 180) totalPremium += premiumPerDay - premiumPerDay * 0.02m;
-            if (i < 365 && coverType != CoverType.Yacht) totalPremium += premiumPerDay - premiumPerDay * 0.03m;
-            else if (i < 365) totalPremium += premiumPerDay - premiumPerDay * 0.08m;
+            totalPremium += dailyRate * (1 - GetDiscount(day, coverType));
         }
 
         return totalPremium;
+    }
+    private static decimal GetMultiplier(CoverType coverType) => coverType switch
+    {
+        CoverType.Yacht => 1.1m,
+        CoverType.PassengerShip => 1.2m,
+        CoverType.Tanker => 1.5m,
+        _ => 1.3m
+    };
+
+    private static decimal GetDiscount(int day, CoverType coverType)
+    {
+        var isYacht = coverType == CoverType.Yacht;
+
+        if (day < 30)
+        {
+            return 0m;
+        }
+
+        if (day < 180)
+        {
+            return isYacht ? 0.05m : 0.02m;
+        }
+
+        return isYacht ? 0.08m : 0.03m;
     }
 }
