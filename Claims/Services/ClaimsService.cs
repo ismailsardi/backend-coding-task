@@ -1,16 +1,20 @@
 using Claims.Auditing;
 using Claims.Repositories;
+using Claims.Validation;
 
 namespace Claims.Services;
 
 public class ClaimsService : IClaimsService
 {
+    private const Decimal MaxDamageCost = 100_000m;
     private readonly IClaimsRepository _claimsRepository;
+    private readonly ICoversRepository _coversRepository;
     private readonly IAuditer _auditer;
 
-    public ClaimsService(IClaimsRepository claimsRepository, IAuditer auditer)
+    public ClaimsService(IClaimsRepository claimsRepository, ICoversRepository coversRepository, IAuditer auditer)
     {
         _claimsRepository = claimsRepository;
+        _coversRepository = coversRepository;
         _auditer = auditer;
     }
 
@@ -26,6 +30,7 @@ public class ClaimsService : IClaimsService
 
     public async Task<Claim> CreateAsync(Claim claim)
     {
+        await ValidateAsync(claim);
         claim.Id = Guid.NewGuid().ToString();
         await _claimsRepository.AddAsync(claim);
         _auditer.AuditClaim(claim.Id, "POST");
@@ -41,4 +46,23 @@ public class ClaimsService : IClaimsService
         }
         return deleted;
     }
+    
+ private async Task ValidateAsync(Claim claim)
+{
+    if (claim.DamageCost > MaxDamageCost)
+    {
+        throw new ValidationException("Damage cost cannot exceed 100,000.");
+    }
+
+    var cover = await _coversRepository.GetByIdAsync(claim.CoverId);
+    if (cover is null)
+    {
+        throw new ValidationException("Cover not found.");
+    }
+
+    if (claim.Created < cover.StartDate || claim.Created > cover.EndDate)
+    {
+        throw new ValidationException("Created date must be within the cover period.");
+    }
+}
 }
