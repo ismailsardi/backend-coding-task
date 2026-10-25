@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Claims.Migrations
 {
-    public partial class _1stMigration : Migration
+    /// <inheritdoc />
+    public partial class InitialCreate : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -23,7 +25,7 @@ namespace Claims.Migrations
                 {
                     table.PrimaryKey("PK_ClaimAudits", x => x.Id);
                 });
-            
+
             migrationBuilder.CreateTable(
                 name: "CoverAudits",
                 columns: table => new
@@ -40,11 +42,12 @@ namespace Claims.Migrations
                 });
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "ClaimAudits");
-            
+
             migrationBuilder.DropTable(
                 name: "CoverAudits");
         }
