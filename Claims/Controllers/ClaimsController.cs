@@ -1,5 +1,4 @@
-using Claims.Auditing;
-using Claims.Repositories;
+using Claims.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Claims.Controllers;
@@ -8,43 +7,47 @@ namespace Claims.Controllers;
 [Route("[controller]")]
 public class ClaimsController : ControllerBase
 {
-    private readonly ILogger<ClaimsController> _logger;
-    private readonly IClaimsRepository _claimsRepository;
-    private readonly IAuditer _auditer;
+    private readonly IClaimsService _claimsService;
 
-    public ClaimsController(ILogger<ClaimsController> logger, IClaimsRepository claimsRepository, IAuditer auditer)
+    public ClaimsController(IClaimsService claimsService)
     {
-        _logger = logger;
-        _auditer = auditer;
-        _claimsRepository = claimsRepository;
+        _claimsService = claimsService;
     }
 
     [HttpGet]
     public async Task<IEnumerable<Claim>> GetAsync()
     {
-        return await _claimsRepository.GetAllAsync();
+        return await _claimsService.GetAllAsync();
     }
 
     [HttpPost]
     public async Task<ActionResult> CreateAsync(Claim claim)
     {
-        claim.Id = Guid.NewGuid().ToString();
-        await _claimsRepository.AddAsync(claim);
-        _auditer.AuditClaim(claim.Id, "POST");
-        return Ok(claim);
+        var created = await _claimsService.CreateAsync(claim);
+        return Created($"/claims/{created.Id}", created);
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(string id)
     {
-        _auditer.AuditClaim(id, "DELETE");
-        await _claimsRepository.DeleteAsync(id);
+        var deleted = await _claimsService.DeleteAsync(id);
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
         return NoContent();
     }
 
     [HttpGet("{id}")]
-    public async Task<Claim?> GetAsync(string id)
+    public async Task<ActionResult<Claim>> GetAsync(string id)
     {
-        return await _claimsRepository.GetByIdAsync(id);
+        var claim = await _claimsService.GetByIdAsync(id);
+        if (claim == null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(claim);
     }
 }
