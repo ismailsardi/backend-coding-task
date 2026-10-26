@@ -58,7 +58,9 @@ builder.Services.AddScoped<IClaimsService, ClaimsService>();
 builder.Services.AddScoped<IPremiumCalculator, PremiumCalculator>();
 
 //Auditing
-builder.Services.AddScoped<IAuditer, Auditer>();
+builder.Services.AddSingleton<AuditQueue>();
+builder.Services.AddSingleton<IAuditer, Auditer>();
+builder.Services.AddHostedService<AuditWorker>();
 
 //Validation
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();

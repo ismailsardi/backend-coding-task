@@ -23,6 +23,14 @@
 - Claim: damage cost max 100,000, cover must exist, created date within the cover period (inclusive).
 - "Today" comes from an injected `TimeProvider`, so the date rules can be unit tested.
 
+## Task 3: Async auditing
+- `Auditer` no longer writes to SQL Server inside the HTTP request. It puts an `AuditMessage` on an in-memory `Channel<T>` (`AuditQueue`), which returns immediately.
+- `AuditWorker` (a `BackgroundService`) reads the channel and saves the audits. It creates a DI scope per message, since `AuditContext` is scoped and the worker is a singleton.
+- Failures are logged and don't stop the worker.
+- Audit timestamps are now UTC, from the injected `TimeProvider` (the template used `DateTime.Now`).
+- `IAuditer` didn't change, so services and their tests were untouched.
+- Limitation: messages still in the channel are lost if the app crashes or restarts. In production I'd use Azure Service Bus (durable, with retries and a dead-letter queue), with `AuditWorker` becoming the Service Bus consumer.
+
 ## Task 4: Unit tests
 - Unit tests for both services, with repositories, auditer and premium calculator mocked (NSubstitute). No database needed, they run in milliseconds.
 - `FakeTimeProvider` fixes "today", so the start-date rule gives the same result every day.

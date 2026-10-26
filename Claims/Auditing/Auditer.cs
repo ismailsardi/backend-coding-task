@@ -1,38 +1,29 @@
-﻿namespace Claims.Auditing
+﻿namespace Claims.Auditing;
+
+public class Auditer : IAuditer
 {
-    public class Auditer : IAuditer
+    private readonly AuditQueue _queue;
+    private readonly TimeProvider _timeProvider;
+
+    public Auditer(AuditQueue queue, TimeProvider timeProvider)
     {
-        private readonly AuditContext _auditContext;
+        _queue = queue;
+        _timeProvider = timeProvider;
+    }
 
-        public Auditer(AuditContext auditContext)
-        {
-            _auditContext = auditContext;
-        }
+    public void AuditClaim(string id, string httpRequestType)
+    {
+        Enqueue(AuditEntity.Claim, id, httpRequestType);
+    }
 
-        public void AuditClaim(string id, string httpRequestType)
-        {
-            var claimAudit = new ClaimAudit()
-            {
-                Created = DateTime.Now,
-                HttpRequestType = httpRequestType,
-                ClaimId = id
-            };
+    public void AuditCover(string id, string httpRequestType)
+    {
+        Enqueue(AuditEntity.Cover, id, httpRequestType);
+    }
 
-            _auditContext.Add(claimAudit);
-            _auditContext.SaveChanges();
-        }
-        
-        public void AuditCover(string id, string httpRequestType)
-        {
-            var coverAudit = new CoverAudit()
-            {
-                Created = DateTime.Now,
-                HttpRequestType = httpRequestType,
-                CoverId = id
-            };
-
-            _auditContext.Add(coverAudit);
-            _auditContext.SaveChanges();
-        }
+    private void Enqueue(AuditEntity entity, string id, string httpRequestType)
+    {
+        var message = new AuditMessage(entity, id, httpRequestType, _timeProvider.GetUtcNow().UtcDateTime);
+        _queue.Writer.TryWrite(message);
     }
 }
