@@ -29,6 +29,8 @@ bld/
 [Ll]ogs/
 # Data folder
 [Dd]ata/
+# ...but keep the EF Core context, which lives in Claims/Data
+!Claims/Data/
 
 # Visual Studio 2015 cache/options directory
 .vs/
