@@ -77,3 +77,25 @@ The template did not run as given:
 - **Move Testcontainers out of `Program.cs`** into a development-only setup, so the app can run against real connection strings in Azure.
 - **Integration tests** for the HTTP layer (status codes, validation responses) with `WebApplicationFactory`.
 - **Smaller issues noticed:** `Cover.Type` is stored in Mongo as `"claimType"`; deleting a cover doesn't check for claims that reference it; the `mongo:latest` image isn't pinned; nullable warnings remain on the models.
+
+## How I worked, and how I used AI
+
+I used Claude (Anthropic's assistant) in a chat, as a tutor and reviewer. It had no access to my editor or repository: I pasted code, build output and errors into the chat, and copied suggestions back by hand. VS Code's C# completion also generated one draft (the first version of `ClaimsRepository`), which I rewrote after review.
+
+### Workflow
+- Before starting, Claude helped me split the work into small steps: setup, a review of the template, Task 1 in sub-steps (context, repositories, premium calculator, auditer, services, controllers), then Task 5, 2, 4, 3 and the README.
+- I committed after each step, and kept a running changelog (`Notes.md`) that became this README.
+- For setup problems (pending model changes, the unsupported `DateOnly` attribute, .NET SDK and Docker on Apple Silicon), I pasted the errors and stack traces, and Claude explained the cause. I chose the fixes, for example regenerating the migrations instead of patching the EF Core 6 snapshot.
+
+### Who wrote what
+- **Task 1:** I wrote the repositories, the services and the controller changes, following Claude's step-by-step instructions. I pasted each file for review, and fixed the issues it pointed out (wrong repository injected, missing audit calls, the id generated twice, null returned instead of 404).
+- **Task 5:** Claude gave me the expected values for the 12 test cases (I checked the logic but skipped the hand calculation) and the structure of the fix (`switch` multiplier, one discount per day band). I ran the tests against the old code first and confirmed 11 failures before rewriting it.
+- **Task 2:** Claude provided the exception handler and the validation methods. I wired them into the services and `Program.cs`.
+- **Task 4:** Claude wrote both service test classes. I read them through and made sure I understood each mock and assertion before committing.
+- **Task 3:** Claude provided the queue, the background worker and the auditer in full, with an explanation of the design (singleton worker creating a scope per message, error handling that keeps the worker alive).
+- **README:** drafted by Claude from my notes. I edited it.
+
+### How I validated it
+- Built after every change and checked the API manually in Swagger: status codes, the 404s, the 400s for each validation rule, the premium values.
+- Test-first for the premium calculation, then the full test suite (`dotnet test`) before each commit.
+- What I missed: I never built from a fresh clone. The template's `.gitignore` excludes folders named `Data`, so `Claims/Data/ClaimsContext.cs` was never pushed. It built on my machine and not in the repository. I've fixed the `.gitignore`, and verified that a fresh clone builds and the tests pass.
